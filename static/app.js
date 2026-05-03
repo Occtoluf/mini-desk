@@ -1,3 +1,8 @@
+const themeStorageKey = "task-journal:theme";
+const initialTheme = localStorage.getItem(themeStorageKey) === "dark" ? "dark" : "light";
+
+document.documentElement.dataset.theme = initialTheme;
+
 const state = {
   projects: [],
   linkTypes: [],
@@ -9,6 +14,7 @@ const state = {
   filter: "current",
   search: "",
   notice: null,
+  theme: initialTheme,
 };
 
 const statusNames = {
@@ -71,6 +77,25 @@ function statusLabel(key) {
 
 function projectStorageKey(suffix) {
   return `task-journal:${suffix}:${state.currentProjectId}`;
+}
+
+function themeLabel() {
+  return state.theme === "dark" ? "Светлая тема" : "Темная тема";
+}
+
+function themeButtonText() {
+  return state.theme === "dark" ? "Светлая" : "Темная";
+}
+
+function applyTheme() {
+  document.documentElement.dataset.theme = state.theme;
+}
+
+function toggleTheme() {
+  state.theme = state.theme === "dark" ? "light" : "dark";
+  localStorage.setItem(themeStorageKey, state.theme);
+  applyTheme();
+  render();
 }
 
 async function bootstrap() {
@@ -188,6 +213,7 @@ function render() {
           .join("")}
       </nav>
       <div class="top-actions">
+        <button class="theme-toggle" data-action="toggle-theme" aria-label="${themeLabel()}" aria-pressed="${state.theme === "dark"}" title="${themeLabel()}">${themeButtonText()}</button>
         <button data-action="add-project" title="Добавить проект">+ проект</button>
         <button class="primary" data-action="add-task" title="Добавить задачу">+ задача</button>
       </div>
@@ -427,6 +453,7 @@ function bindEvents() {
 }
 
 async function handleAction(action) {
+  if (action === "toggle-theme") return toggleTheme();
   if (action === "add-project") return addProject();
   if (action === "edit-project") return editProject();
   if (action === "add-task") return addTask();
